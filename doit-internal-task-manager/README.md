@@ -1,64 +1,121 @@
-# **Pnpm Workspace**
+# DoIt - Internal Task Manager
 
- To get started, let’s make sure you have PNPM installed. The [official docs have an installation page.](https://pnpm.io/installation "Installation | pnpm")
+A modern task management application built with a monorepo architecture using PNPM workspaces.
 
-## **Setting up the Workspace structure:**
+## Tech Stack
 
-1. Create a new folder named pnpm-workspace (An optional name). cd into it and then run pnpm init to generate a top-level package.json
+- **PNPM Workspaces** - Monorepo management
+- **React 18** - UI library
+- **TypeScript** - Type-safe development
+- **Vite** - Build tool and dev server
+- **React Router** - Client-side routing
+- **Sass** - Styling
+- **Axios** - HTTP client
 
-```bash
-> mkdir pnpm-workspace
-> cd pnpm-workspace
-> pnpm init
-```
+## Purpose
 
-2. Create an apps and packages folder within pnpm-workspace.
+DoIt is an internal task management system designed for team collaboration and productivity tracking. The project demonstrates modern monorepo architecture with shared packages and multiple applications working in a unified workspace.
 
-```bash
-> mkdir apps packages
-```
+## Main Features
 
-3. Create a `pnpm-workspace.yaml` into the root of the project.
+- Task creation, assignment, and tracking
+- Monorepo architecture with PNPM workspaces
+- Shared component library across apps
+- Client application with Vite for fast builds
+- TypeScript for type-safe development
+- React Router for navigation
+- Axios for API communication
+- Workspace package referencing without publishing
 
-```bash
-> touch pnpm-workspace.yaml
-```
+## Complex Features - Technical Details
 
-4. Defining workspace structure in `pnpm-workspace.yaml` file.
+### 1. PNPM Workspace Monorepo
+Organizes multiple related packages in a single repository with shared dependencies and efficient storage.
 
+**Technical Implementation:**
 ```yaml
 packages:
   - 'apps/*'
   - 'packages/*'
 ```
 
-Usually, in a workspace/monorepo you want to run commands from the root of the repository to not have to constantly switch between folders. PNPM workspaces have a way to do that, by passing a filter argument, like:
+- Symbolic linking between workspace packages
+- Single `node_modules` at root with package hoisting
+- Workspace protocol: `"sparrow": "workspace:*"`
+- Cross-package dependency management
+- Consistent versioning across packages
 
+### 2. Shared UI Component Library (Sparrow)
+Custom reusable component library shared across workspace apps.
+
+**Technical Implementation:**
+- Package location: `packages/sparrow`
+- Components exported as ES modules
+- Referenced via workspace protocol in client app
+- Hot module replacement during development
+- Build once, use everywhere in monorepo
+
+### 3. Filter-Based Task Execution
+Run commands on specific packages using PNPM filters.
+
+**Technical Implementation:**
 ```bash
-> pnpm --filter <package-name> <command>
+pnpm --filter client dev
+pnpm --filter react-app build
 ```
 
-## **Consuming our packages from the apps**
+- Target specific packages without directory changes
+- Run scripts on multiple matching packages
+- Dependency-aware execution order
 
-This pnpm command adds ui-library packages to the dependency in the `apps/react-app/package.json`
+## System Design Approach
 
-```bash
-> pnpm add ui-library --filter react-app --workspace
-```
+**Monorepo Architecture**
+- Single repository for multiple related projects
+- Apps folder for runnable applications
+- Packages folder for shared libraries
+- Centralized dependency management
+- Workspace-level scripts for common operations
 
-## **More information**
+**Component Library Pattern**
+- Shared UI components in `packages/sparrow`
+- Apps consume via workspace protocol references
+- Single source of truth for UI elements
+- Version synchronization across consumers
 
-[Setup a Monorepo with PNPM workspaces and speed it up with Nx! | by Juri Strumpflohner | Nx Devtools](https://blog.nrwl.io/setup-a-monorepo-with-pnpm-workspaces-and-speed-it-up-with-nx-bc5d97258a7e#6ad2 "Setup a Monorepo with PNPM workspaces and speed it up with Nx! | by Juri Strumpflohner | Nx Devtools")
+**Client-Side SPA Architecture**
+- React for component-based UI
+- React Router for client-side routing
+- Vite for fast builds and HMR
+- Axios for HTTP requests to backend
 
-### **Clone and run this sample project**:
+## Algorithms & Data Structures
 
-```bash
-> git clone git@gitlab.com:testprojectsgroup/web/pnpm-workspace.git
-> cd pnpm-workspace
-> pnpm install
-> pnpm run --filter react-app dev
-```
+**Data Structures:**
 
+- **Dependency Graph** - PNPM builds graph of package dependencies
+  - Determines installation and build order
+  - Detects circular dependencies
 
-Run client: 
-pnpm run --filter client dev
+- **Symbol Link Tree** - File system structure
+  - `node_modules` contains symlinks to workspace packages
+  - Resolves to actual package locations
+
+- **Task Array** - In-memory task list
+  - Filtered, sorted, paginated for display
+
+**Algorithms:**
+
+- **Topological Sort** - For build order determination
+  ```
+  If package A depends on B, build B before A
+  ```
+
+- **Package Resolution**
+  - Workspace protocol resolver checks `packages/*` first
+  - Falls back to npm registry if not found
+
+- **Hot Module Replacement (HMR)**
+  - Vite watches file changes
+  - Calculates minimal dependency update set
+  - Updates browser without full reload
